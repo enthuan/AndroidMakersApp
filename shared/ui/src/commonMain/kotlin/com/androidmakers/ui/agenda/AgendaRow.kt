@@ -27,8 +27,12 @@ import androidx.compose.ui.unit.dp
 import com.androidmakers.ui.common.EmojiUtils
 import com.androidmakers.ui.model.UISession
 import com.androidmakers.ui.theme.AMColor
+import fr.androidmakers.domain.model.Session
 import kotlinx.datetime.Instant
+import kotlinx.datetime.toInstant
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.hours
 
 @Composable
 private fun maybeClickable(uiSession: UISession, onSessionClicked: ((UISession) -> Unit)): Modifier {
@@ -69,9 +73,7 @@ fun AgendaRow(
       headlineContent = {
         Text(
             text = uiSession.title,
-            style = MaterialTheme.typography.titleLarge.copy(
-                fontWeight = FontWeight.Bold
-            ),
+            style = MaterialTheme.typography.titleMedium,
             modifier = maybeClickable(uiSession, onSessionClicked)
         )
       },
@@ -89,7 +91,7 @@ fun AgendaRow(
           }
 
           Text(
-              text = "", //uiSession.subtitle(LocalContext.current),
+              text = uiSession.subtitle(),
               style = MaterialTheme.typography.bodyMedium,
               modifier = Modifier.padding(top = 4.dp)
           )
@@ -127,21 +129,29 @@ fun AgendaRow(
       },
   )
 }
-/*
-private fun UISession.subtitle(context: Context) = buildString {
-  val millis = endDate - startDate
-  val duration = TimeUtils.formatDuration(
-      context = context,
-      millis
-  )
 
-  append(duration)
+private fun UISession.subtitle() = buildString {
+  append(formattedDuration())
   append(" / $room")
   val emoji = EmojiUtils.getLanguageInEmoji(language)
   if (emoji != null) {
     append(" / $emoji")
   }
-}*/
+}
+
+fun UISession.formattedDuration(): String {
+  val duration = endDate - startDate
+
+  return buildString {
+    if (duration.inWholeHours > 0) {
+      append(duration.inWholeHours)
+      append("h")
+    }
+
+    append((duration - duration.inWholeHours.hours).inWholeMinutes)
+    append("min")
+  }
+}
 
 @Preview
 @Composable
